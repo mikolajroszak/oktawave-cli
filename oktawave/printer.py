@@ -1,5 +1,11 @@
 import sys
-
+import os
+lc_all = os.environ.get('LC_ALL')
+if lc_all == None or lc_all == '' or lc_all == 'C':
+    os.environ['LC_ALL'] = 'en_US.UTF-8'
+    import locale
+    import codecs
+    sys.stdout = codecs.getwriter(locale.getpreferredencoding())(sys.stdout);
 from prettytable import PrettyTable
 
 

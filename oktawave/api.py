@@ -361,7 +361,7 @@ class OktawaveApi(object):
                 'capacity_gb': hdd['CapacityGB'],
                 'is_primary': hdd['IsPrimary']
             } for hdd in data['DiskDrives']],
-            'description': data['Description']
+            'description': data['TemplateDescription']['TemplateDescriptionsNames'][0]['Description'],
         }
 
     def OCI_List(self):

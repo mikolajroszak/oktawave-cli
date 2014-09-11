@@ -186,8 +186,11 @@ class OktawaveCli(object):
 
     def _print_templates(self, templates):
         if templates:
-            res = dict((k, [v]) for k, v in templates.items())
-            self.p.print_hash_table(res, ['Template ID', 'Template name'])
+            tab = [['ID', 'Name', 'Category', 'System category']]
+            tab.extend([
+                [t['id'], t['name'], t['category'], t['system_category']]
+            for t in templates])
+            self.p.print_table(tab)
         else:
             print "No templates found.\n"
 

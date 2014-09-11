@@ -370,8 +370,12 @@ class OktawaveApi(object):
         self._logon()
         data = self.common.call('GetTemplatesByOrigin', clientId=self.client_id, origin=TemplateOrigin(origin).id)
         if data:
-            return dict((template['TemplateId'], template['TemplateName'])
-                        for template in data if name_filter in template['TemplateName'])
+            return [{
+                'id': template['TemplateId'],
+                'name': template['TemplateName'],
+                'category': TemplateCategory(template['TemplateCategory'], None),
+                'system_category': DictionaryItem(template['TemplateSystemCategory'])
+            } for template in data if name_filter in template['TemplateName']]
 
     ### OCI (VMs) ###
 

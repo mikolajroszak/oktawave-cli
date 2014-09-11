@@ -3,6 +3,10 @@
 import sys
 import logging
 import argparse
+try:
+    import argcomplete
+except ImportError:
+    pass
 from setproctitle import setproctitle
 import ConfigParser
 import os
@@ -357,6 +361,10 @@ if __name__ == '__main__':
             continue
         add_subparsers(parsers[ns], [[cmd, '---', []]])
 
+    try:
+        argcomplete.autocomplete(sysparser)
+    except Exception:
+        pass
     args = sysparser.parse_args()
 
     # Read auth credentials from config file

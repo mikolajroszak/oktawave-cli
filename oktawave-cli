@@ -8,7 +8,7 @@ import ConfigParser
 import os
 import readline
 
-from oktawave.cli import OktawaveCli, OCIid, ORDBid, ContainerId, OPNid, OVSid
+from oktawave.cli import OktawaveCli, OCIid, ORDBid, ContainerId, OPNid, OVSid, TemplateOrigin
 
 
 VERSION = "0.8.5"
@@ -103,15 +103,8 @@ if __name__ == '__main__':
         ['Logs', 'Show virtual machine logs'],
         ['Settings', 'Show basic virtual machine settings'],
     ]) + [
-        ['TemplateCategories', 'Get available template categories', []],
-        ['Templates', 'List available VM templates from a category', [
-            ['id', 'Template category ID, as returned by "OCI TemplateCategories"', {'type': int}]
-        ]],
-        ['TemplateInfo', 'Get detailed information about a particular template', [
-            ['id', 'Template ID, as returned by "OCI Templates"', {'type': int}]
-        ]],
         ['Create', 'Create a new VM instance from template', [
-            ['template', 'Template ID, as returned by "OCI Templates"', {'type': int}],
+            ['template', 'Template ID, as returned by "Template List"', {'type': int}],
             ['name', 'VM name'],
             ['oci_class',
              'OCI class name, for example "v1.standard-2.2" or "v1.highcpu-4.2". If not specified, the minimal class for the template is used.',
@@ -141,6 +134,17 @@ if __name__ == '__main__':
             ['--user', 'User to connect as']
         ]],
     ]))
+    template_parser = namespace_parser.add_parser('Template', help='OCI templates')
+    template_parsers = template_parser.add_subparsers(title='Template commands', dest = 'command')
+    parsers['Template'] = template_parsers
+    add_subparsers(template_parsers, [
+        ['List', 'List available VM templates from a category', [
+            ['category', 'Template category. Defaults to "QuickStart".', {'choices': TemplateOrigin.names, 'nargs': '?', }]
+        ]],
+        ['Show', 'Get detailed information about a particular template', [
+            ['id', 'Template ID, as returned by "Template List"', {'type': int}]
+        ]],
+    ])
     ocs_parser = namespace_parser.add_parser('OCS', help='Commands related to OCS')
     ocs_parsers = ocs_parser.add_subparsers(title='OCS commands', dest='command')
     parsers['OCS'] = ocs_parsers

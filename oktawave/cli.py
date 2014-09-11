@@ -196,7 +196,13 @@ class OktawaveCli(object):
 
     def Template_List(self, args, name_filter=''):
         """Lists templates of a particular category"""
-        templates = self.api.Template_List(args.category, name_filter)
+        templates = []
+        if args.category:
+            templates = self.api.Template_List(args.category, name_filter)
+        else:
+            templates = []
+            for origin in TemplateOrigin.names:
+                templates.extend(self.api.Template_List(origin, name_filter) or [])
         self._print_templates(templates)
 
     def OCI_List(self, args):

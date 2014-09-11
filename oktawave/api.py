@@ -373,7 +373,7 @@ class OktawaveApi(object):
             return [{
                 'id': template['TemplateId'],
                 'name': template['TemplateName'],
-                'category': TemplateCategory(template['TemplateCategory'], None),
+                'category': str(TemplateOrigin(origin)),
                 'system_category': DictionaryItem(template['TemplateSystemCategory'])
             } for template in data if name_filter in template['TemplateName']]
 

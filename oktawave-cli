@@ -16,10 +16,9 @@ except ImportError:
     pass
 from setproctitle import setproctitle
 import ConfigParser
-import os
 import readline
 
-from oktawave.cli import OktawaveCli, OCIid, ORDBid, ContainerId, OPNid, OVSid
+from oktawave.cli import Completer, OktawaveCli, OCIid, ORDBid, ContainerId, OPNid, OVSid
 
 
 VERSION = "0.8.5"
@@ -413,13 +412,15 @@ if __name__ == '__main__':
         readline.parse_and_bind('tab: complete')
         readline.parse_and_bind('set editing-mode vi')
         while True:
+            c = Completer(parsers)
+            readline.set_completer(lambda text, stage: c.complete(text, stage))
             try:
                 line = raw_input(args.username + '@oktawave> ')
             except EOFError:
                 line = 'exit'
             except KeyboardInterrupt:
                 line = 'exit'
-            words = line.split()
+            words = c.tokenize(line)
             if len(words) >= 1:
                 if words[0] == 'exit':
                     print "Bye."

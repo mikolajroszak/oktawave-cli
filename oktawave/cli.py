@@ -1,5 +1,7 @@
 import sys
 import os
+import readline
+import shlex
 
 from oktawave.api import (
     OktawaveApi,
@@ -11,6 +13,25 @@ from oktawave.api import (
 )
 from oktawave.exceptions import *
 from oktawave.printer import Printer
+
+
+class Completer(object):
+    def __init__(self, parser):
+        self.parser = parser
+
+    def tokenize(self, buf):
+        try:
+            tokens = shlex.split(buf, False, True)
+        except ValueError:
+            buf += '"'
+        tokens = shlex.split(buf, False, True)
+        return tokens
+                
+    def complete(self, text, stage):
+        buf = readline.get_line_buffer()
+        tokens = self.tokenize(buf)
+        print self.parser
+        return (tokens + [None])[stage]
 
 
 class OktawaveNameNotFound(ValueError):

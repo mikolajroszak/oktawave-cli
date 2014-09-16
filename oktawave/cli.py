@@ -28,10 +28,19 @@ class Completer(object):
         return tokens
                 
     def complete(self, text, stage):
-        buf = readline.get_line_buffer()
+        buf = ' ' + readline.get_line_buffer()
         tokens = self.tokenize(buf)
-        print self.parser
-        return (tokens + [None])[stage]
+        if buf[-1].isspace():
+            tokens.append('')
+#        print self.parser
+#        print tokens
+        if (len(tokens) == 1):
+            return (sorted([n + ' ' for n in self.parser.keys() if n.lower().startswith(tokens[-1].lower())]) + [None])[stage]
+        elif (len(tokens) == 2):
+            return (sorted([c + ' ' for c in self.parser[tokens[0]].choices.keys() if c.lower().startswith(tokens[-1].lower())]) + [None])[stage]
+#        else:
+ #           print self.parser[tokens[0]].choices[tokens[1]]
+        return ([None])[stage]
 
 
 class OktawaveNameNotFound(ValueError):

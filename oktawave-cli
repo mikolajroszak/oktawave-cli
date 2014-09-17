@@ -276,7 +276,7 @@ if __name__ == '__main__':
     ])
     container_parser = namespace_parser.add_parser('Container', help='Commands related to containers')
     container_parsers = container_parser.add_subparsers(title='Container commands', dest='command')
-    parsers['Containers'] = container_parsers
+    parsers['Container'] = container_parsers
     container_params = [
         ['name', 'Container name'],
         ['--load-balancer', 'Enable load balancer', {'action': 'store_true'}],

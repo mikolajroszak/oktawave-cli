@@ -61,3 +61,7 @@
 
 0.8.5
 - updated available OCI classes
+
+0.8.6
+- new template categories
+- completions of namespace and command in interactive mode

@@ -21,7 +21,7 @@ import readline
 from oktawave.cli import Completer, OktawaveCli, OCIid, ORDBid, ContainerId, OPNid, OVSid, TemplateOrigin
 
 
-VERSION = "0.8.5"
+VERSION = "0.8.6"
 
 
 # Helpers to add subparsers based on simple descriptions

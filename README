@@ -68,7 +68,18 @@ NAMESPACE COMMAND [arguments]
 To exit the interactive mode, type "exit".
 
 
-5. Help
+5. Bash autocompletions
+
+To enable Bash autocompletions, use the argcomplete python module:
+
+pip install argcomplete
+eval "$(register-python-argcomplete PATH_TO_OKTAWAVE_CLI)"
+
+If oktawave-cli is in your $PATH, you can try:
+eval "$(register-python-argcomplete `which oktawave-cli`)"
+
+
+6. Help
 
 You can get a list of available namespaces by issuing
 oktawave-cli --help

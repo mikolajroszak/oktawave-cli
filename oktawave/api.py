@@ -42,6 +42,19 @@ class TemplateType(object):
     Machine = 174
     Database = 324
 
+class TemplateOrigin(object):
+    names = ['QuickStart', 'MyTemplates', 'MyApplications', 'CommunityCatalogue', 'LastUsed']
+    
+    def __init__(self, name):
+        self.id = 0
+        for i in xrange(len(self.names)):
+            if self.names[i] == name:
+                self.id = i
+                break
+    
+    def __str__(self):
+        return self.names[self.id]
+
 
 class PowerStatus(object):
     PowerOn = 86
@@ -314,21 +327,9 @@ class OktawaveApi(object):
                 'name': user['FullName'],
             }
 
-    # OCI (VMs) ###
+    ### OCI Templates ###
 
-    def OCI_TemplateCategories(self):
-        """Lists available template categories"""
-        self._logon()
-        data = self.common.call('GetTemplateCategories', clientId=self.client_id)
-        self._d(data)
-
-        for tc in data:
-            yield TemplateCategory(tc, None)
-            if tc['CategoryChildren'] is not None:
-                for tcc in tc['CategoryChildren']:
-                    yield TemplateCategory(tcc, tc['TemplateCategoryId'])
-
-    def OCI_Templates(self, category_id, name_filter=''):
+    def templates_in_category(self, category_id, name_filter=''):
         """Lists templates in a category"""
         self._logon()
         data = self.common.call(
@@ -337,7 +338,7 @@ class OktawaveApi(object):
             return dict((template['TemplateId'], template['TemplateName'])
                         for template in data if name_filter in template['TemplateName'])
 
-    def OCI_TemplateInfo(self, template_id):
+    def Template_Show(self, template_id):
         """Shows more detailed info about a particular template"""
         self._logon()
         data = self.clients.call('GetTemplate', templateId=template_id, clientId=self.client_id)
@@ -363,6 +364,20 @@ class OktawaveApi(object):
             } for hdd in data['DiskDrives']],
             'description': data['TemplateDescription']['TemplateDescriptionsNames'][0]['Description'],
         }
+
+    def Template_List(self, origin, name_filter=''):
+        """Lists templates of a chosen origin"""
+        self._logon()
+        data = self.common.call('GetTemplatesByOrigin', clientId=self.client_id, origin=TemplateOrigin(origin).id)
+        if data:
+            return [{
+                'id': template['TemplateId'],
+                'name': template['TemplateName'],
+                'category': str(TemplateOrigin(origin)),
+                'system_category': DictionaryItem(template['TemplateSystemCategory'])
+            } for template in data if name_filter in template['TemplateName']]
+
+    ### OCI (VMs) ###
 
     def OCI_List(self):
         """Lists client's virtual machines' basic info"""

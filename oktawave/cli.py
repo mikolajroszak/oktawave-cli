@@ -1,5 +1,7 @@
 import sys
 import os
+import readline
+import shlex
 
 from oktawave.api import (
     OktawaveApi,
@@ -7,10 +9,39 @@ from oktawave.api import (
     DICT as OktawaveConstants,
     CloneType,
     TemplateType,
-    PowerStatus
+    PowerStatus,
+    TemplateOrigin
 )
 from oktawave.exceptions import *
 from oktawave.printer import Printer
+
+
+class Completer(object):
+    def __init__(self, parser):
+        self.parser = parser
+
+    def tokenize(self, buf):
+        try:
+            tokens = shlex.split(buf, False, True)
+        except ValueError:
+            buf += '"'
+        tokens = shlex.split(buf, False, True)
+        return tokens
+                
+    def complete(self, text, stage):
+        buf = ' ' + readline.get_line_buffer()
+        tokens = self.tokenize(buf)
+        if buf[-1].isspace():
+            tokens.append('')
+#        print self.parser
+#        print tokens
+        if (len(tokens) == 1):
+            return (sorted([n + ' ' for n in self.parser.keys() if n.lower().startswith(tokens[-1].lower())]) + [None])[stage]
+        elif (len(tokens) == 2):
+            return (sorted([c + ' ' for c in self.parser[tokens[0]].choices.keys() if c.lower().startswith(tokens[-1].lower())]) + [None])[stage]
+#        else:
+ #           print self.parser[tokens[0]].choices[tokens[1]]
+        return ([None])[stage]
 
 
 class OktawaveNameNotFound(ValueError):
@@ -157,32 +188,9 @@ class OktawaveCli(object):
             ['Client ID', 'E-mail', 'Name'],
             users, fmt)
 
-    def OCI_TemplateCategories(self, args):
-        """Lists available template categories"""
-        cats = self.api.OCI_TemplateCategories()
-
-        def fmt(cat):
-            tc_id = cat.id
-            if cat.parent_id is not None:
-                tc_id = '  ' + str(tc_id)
-            return [tc_id, cat.name, cat.description]
-
-        self._print_table(
-            ['Template category ID', 'Name', 'Description'],
-            cats, fmt)
-
-    def OCI_Templates(self, args, name_filter=''):
-        """Lists templates in a category"""
-        templates = self.api.OCI_Templates(args.id, name_filter)
-        if templates:
-            res = dict((k, [v]) for k, v in templates.items())
-            self.p.print_hash_table(res, ['Template ID', 'Template name'])
-        else:
-            print "No templates in this category.\n"
-
-    def OCI_TemplateInfo(self, args):
+    def Template_Show(self, args):
         """Shows more detailed info about a particular template"""
-        ti = self.api.OCI_TemplateInfo(args.id)
+        ti = self.api.Template_Show(args.id)
 
         def _hdd_label(hdd):
             if hdd['is_primary']:
@@ -205,6 +213,27 @@ class OktawaveCli(object):
             ['Description', ti['description']],
         ])
         self.p.print_table(tab)
+
+    def _print_templates(self, templates):
+        if templates:
+            tab = [['ID', 'Name', 'Category', 'System category']]
+            tab.extend([
+                [t['id'], t['name'], t['category'], t['system_category']]
+            for t in templates])
+            self.p.print_table(tab)
+        else:
+            print "No templates found.\n"
+
+    def Template_List(self, args, name_filter=''):
+        """Lists templates of a particular category"""
+        templates = []
+        if args.category:
+            templates = self.api.Template_List(args.category, name_filter)
+        else:
+            templates = []
+            for origin in TemplateOrigin.names:
+                templates.extend(self.api.Template_List(origin, name_filter) or [])
+        self._print_templates(templates)
 
     def OCI_List(self, args):
         """Lists client's virtual machines"""
@@ -702,15 +731,13 @@ class OktawaveCli(object):
     def ORDB_Templates(self, args):
         """Lists database VM templates"""
         print "\nCategory: MySQL"
-        args.id = OktawaveConstants['MYSQL_TEMPLATE_CATEGORY']
-        self.OCI_Templates(args, 'ORDB')
+        self._print_templates(self.api.templates_in_category(OktawaveConstants['MYSQL_TEMPLATE_CATEGORY']))
         print "Category: PostgreSQL"
-        args.id = OktawaveConstants['POSTGRESQL_TEMPLATE_CATEGORY']
-        self.OCI_Templates(args, 'ORDB')
+        self._print_templates(self.api.templates_in_category(OktawaveConstants['POSTGRESQL_TEMPLATE_CATEGORY']))
 
     def ORDB_TemplateInfo(self, args):
         """Shows information about a template"""
-        self.OCI_TemplateInfo(args)
+        self.Template_Show(args)
 
     def ORDB_CreateLogicalDatabase(self, args):
         """Creates a new logical database within an instance"""

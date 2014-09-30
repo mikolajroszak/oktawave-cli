@@ -11,6 +11,7 @@ from oktawave.commands.ocs import OCS
 from oktawave.commands.opn import OPN
 from oktawave.commands.ordb import ORDB
 from oktawave.commands.ovs import OVS
+from oktawave.commands.template import Template
 
 VERSION = '0.9.0'
 
@@ -54,6 +55,7 @@ cli.add_command(OVS)
 cli.add_command(ORDB)
 cli.add_command(Container)
 cli.add_command(OPN)
+cli.add_command(Template)
 
 if __name__ == '__main__':
     cli()

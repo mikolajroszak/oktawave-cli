@@ -125,3 +125,14 @@ def show_template_info(ctx, template_id):
     ctx.p.print_table(tab)
     ctx.p.print_str('Template description:')
     ctx.p.print_str(ti['description'])
+
+
+def print_templates(ctx, templates):
+    if templates:
+        tab = [['ID', 'Name', 'Categories', 'System category']]
+        tab.extend([
+            [t['id'], t['name'], t['categories'], t['system_category']]
+        for t in templates])
+        ctx.p.print_table(tab)
+    else:
+        print "No templates found.\n"

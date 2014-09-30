@@ -43,6 +43,20 @@ class TemplateType(object):
     Database = 324
 
 
+class TemplateOrigin(object):
+    names = ['QuickStart', 'MyTemplates', 'MyApplications', 'CommunityCatalogue', 'LastUsed']
+
+    def __init__(self, name):
+        self.id = 0
+        for i in xrange(len(self.names)):
+            if self.names[i] == name:
+                self.id = i
+                break
+
+    def __str__(self):
+        return self.names[self.id]
+
+
 class PowerStatus(object):
     PowerOn = 86
     PowerOff = 87
@@ -362,7 +376,71 @@ class OktawaveApi(object):
                 'name': user['FullName'],
             }
 
-    # OCI (VMs) ###
+    # OCI Templates ###
+
+    def templates_in_category(self, category_id, name_filter=''):
+        """Lists templates in a category"""
+        self.logon()
+        data = self.common.call(
+            'GetTemplatesByCategory', categoryId=category_id, categorySystemId=None, type=None, clientId=self.client_id)
+        if data:
+            return dict((template['TemplateId'], template['TemplateName'])
+                        for template in data if name_filter in template['TemplateName'])
+
+    def Template_Show(self, template_id):
+        """Shows more detailed info about a particular template"""
+        self.logon()
+        data = self.clients.call('GetTemplate', templateId=template_id, clientId=self.client_id)
+
+        template_category = TemplateCategory(data['TemplateCategory'], None)
+        software = [SoftwareItem(item['Software']) for item in data['SoftwareList']]
+
+        return {
+            'template_id': data['TemplateId'],
+            'template_name': data['TemplateName'],
+            'template_category': template_category.tree_path,
+            'vm_class_id': data['VMClass']['DictionaryItemId'],
+            'vm_class_name': DictionaryItem(data['VMClass']),
+            'system_category_name': DictionaryItem(data['TemplateSystemCategory']),
+            'label': data['Name'],
+            'software': software,
+            'eth_count': data['EthernetControllersCount'],
+            'connection_type': DictionaryItem(data['ConnectionType']),
+            'disks': [{
+                'name': hdd['HddName'],
+                'capacity_gb': hdd['CapacityGB'],
+                'is_primary': hdd['IsPrimary']
+            } for hdd in data['DiskDrives']],
+            'description': data['TemplateDescription']['TemplateDescriptionsNames'][0]['Description'],
+        }
+
+    def Template_List(self, origin, name_filter=''):
+        """Lists templates of a chosen origin"""
+        self.logon()
+        data = self.common.call('GetTemplatesByOrigin', clientId=self.client_id, origin=TemplateOrigin(origin).id)
+        if data:
+            return [{
+                'id': template['TemplateId'],
+                'name': template['TemplateName'],
+                'categories': str(TemplateOrigin(origin)),
+                'system_category': DictionaryItem(template['TemplateSystemCategory'])
+            } for template in data if name_filter in template['TemplateName']]
+
+    def Template_ListAll(self, name_filter=''):
+        """Lists all available templates"""
+        self.logon()
+        templates = []
+        tmap = {}
+        for origin in TemplateOrigin.names:
+            for t in (self.Template_List(origin, name_filter) or []):
+                if t['id'] in tmap:
+                    tmap[t['id']]['categories'] += ', ' + t['categories']
+                else:
+                    templates.append(t)
+                    tmap[t['id']] = t
+        return templates
+
+    ### OCI (VMs) ###
 
     def OCI_TemplateCategories(self):
         """Lists available template categories"""

@@ -18,6 +18,9 @@ from oktawave.commands.completer import Completer
 
 VERSION = '0.9.0'
 
+if '-i' in sys.argv or '--interactive' in sys.argv:
+    sys.argv.extend(['OCI', 'List'])
+
 
 @click.group()
 @click.option('-c', '--config', help='Specify configuration file', type=click.Path(dir_okay=False),

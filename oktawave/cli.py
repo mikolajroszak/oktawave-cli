@@ -67,7 +67,7 @@ def interactive_cli(ctx):
             line = 'exit'
         except KeyboardInterrupt:
             line = 'exit'
-        words = line.split()
+        words = c.tokenize(line)
         if len(words) >= 1:
             if words[0] == 'exit':
                 print "Bye."

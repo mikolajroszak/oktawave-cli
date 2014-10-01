@@ -49,6 +49,15 @@ class NamedItemParam(click.ParamType):
     def list_items(cls, api):
         raise NotImplementedError()
 
+    @classmethod
+    def list_completions(cls, api):
+        items = [x for x in cls.list_items(api)]
+        ret = []
+        for item in items:
+            for x in item:
+                ret.append(str(x))
+        return ret
+
     def convert(self, value, param, ctx):
         try:
             return int(value)

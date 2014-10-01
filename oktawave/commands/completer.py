@@ -1,5 +1,6 @@
 import shlex
 import readline
+import click
 
 class Completer(object):
     def __init__(self, cli, ctx):
@@ -27,10 +28,10 @@ class Completer(object):
             return (sorted([c + ' ' for c in self.cli.commands[tokens[0]].commands.keys() if c.lower().startswith(tokens[-1].lower())]) + [None])[stage]
         else:
             param = self.cli.commands[tokens[0]].commands[tokens[1]].params[len(tokens) - 3]
-            items = [x for x in param.type.list_items(self.ctx.api)]
-            ret = []
-            for item in items:
-                for x in item:
-                    ret.append(str(x))
-            return (sorted([x + ' ' for x in ret if x.lower().startswith(tokens[-1].lower())]) + [None])[stage]
+            completions = []
+            if hasattr(param.type, 'list_completions') and callable(getattr(param.type, 'list_completions')):
+                completions = param.type.list_completions(self.ctx.api)
+            elif isinstance(param.type, click.types.Choice):
+                completions = param.type.choices
+            return (sorted([x + ' ' for x in completions if x.lower().startswith(tokens[-1].lower())]) + [None])[stage]
         return ([None])[stage]

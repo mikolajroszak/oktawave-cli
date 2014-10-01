@@ -56,6 +56,10 @@ class TemplateOrigin(object):
     def __str__(self):
         return self.names[self.id]
 
+    @classmethod
+    def list_completions(cls, api):
+        return names
+
 
 class PowerStatus(object):
     PowerOn = 86

@@ -19,6 +19,8 @@ class Completer(object):
         tokens = self.tokenize(buf)
         if buf[-1].isspace():
             tokens.append('')
+        while len(tokens) > 0 and tokens[0].startswith('-'):
+            tokens.pop(0)
         if (len(tokens) == 1):
             return (sorted([n + ' ' for n in self.cli.commands.keys() if n.lower().startswith(tokens[-1].lower())]) + [None])[stage]
         elif (len(tokens) == 2):
